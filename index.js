@@ -58,6 +58,32 @@ app.get('/api/queryDataPoint', function(request, response) {
 	});
 });
 
+app.get('/api/insertTemperature', function(request, response) {
+	if (!request.query.temp) {
+		__sendErrorResponse(response, 403, 'No query parameters temp');
+		return;
+	}
+
+	var temp = request.query.temp;
+	var timeMillis = moment();
+	var time = timeMillis.format('MM/DD hh:mm:ss');
+	var insert = {
+		_id: timeMillis.unix(),
+		temperature : temp,
+		time : time
+	};
+	var items = database.collection('sensor_history');
+	items.insert(insert, function(err, result) {
+		if (err) {
+			__sendErrorResponse(response, 406, err);
+		} else {
+			response.type('application/json');
+			response.status(200).send(result);
+			response.end();
+		}
+	});
+});
+
 app.use(express.static(__dirname + '/public'));
 
 app.use(function(req, res, next) {
